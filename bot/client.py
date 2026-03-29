@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 import os
+from decimal import Decimal
 from pathlib import Path
 import re
 import time
@@ -276,6 +277,15 @@ class BinanceFuturesTestnetClient:
             return (
                 f"{message} "
                 "Increase the order quantity or price so the order notional clears Binance's minimum threshold."
+            )
+
+        if error_code == "0" and "restricted location" in error_message:
+            return (
+                f"{message} "
+                "Binance rejected the request based on the backend server location. "
+                "If this app is running on Vercel, move the Function region out of the default US region "
+                "and redeploy. If the error still appears after that, Binance is likely blocking the hosting "
+                "provider's egress IP, so the trading backend will need to run from a different server or your local machine."
             )
 
         return message

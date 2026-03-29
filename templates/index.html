@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Binance Futures Demo Trading UI</title>
+    <link rel="stylesheet" href="{{ url_for('static', path='/styles.css') }}">
+</head>
+<body>
+    <div class="page-shell">
+        <header class="page-header">
+            <div class="header-copy">
+                <h1>Binance Futures Demo Trading</h1>
+                <p class="header-text">
+                    Submit USDT-M demo orders and review the latest request and response details.
+                </p>
+            </div>
+        </header>
+
+        <main class="workspace">
+            <section class="panel form-panel">
+                <div class="panel-heading">
+                    <h2>New Order</h2>
+                </div>
+
+                <form id="order-form" class="order-form" novalidate>
+                    <label class="field">
+                        <span>Symbol</span>
+                        <input id="symbol" name="symbol" type="text" value="BTCUSDT" autocomplete="off" spellcheck="false" placeholder="BTCUSDT">
+                    </label>
+
+                    <div class="field-row">
+                        <label class="field">
+                            <span>Side</span>
+                            <select id="side" name="side">
+                                <option value="BUY">BUY</option>
+                                <option value="SELL">SELL</option>
+                            </select>
+                        </label>
+
+                        <label class="field">
+                            <span>Type</span>
+                            <select id="order-type" name="orderType">
+                                <option value="LIMIT">LIMIT</option>
+                                <option value="MARKET">MARKET</option>
+                            </select>
+                        </label>
+                    </div>
+
+                    <div class="field-row">
+                        <label class="field">
+                            <span>Quantity</span>
+                            <input id="quantity" name="quantity" type="number" min="0" step="any" value="0.001" placeholder="0.001">
+                        </label>
+
+                        <label class="field" id="price-field">
+                            <span>Price</span>
+                            <input id="price" name="price" type="number" min="0" step="any" value="50000" placeholder="50000">
+                        </label>
+                    </div>
+
+                    <div class="inline-note" id="price-note">
+                        Price is required for LIMIT orders and automatically ignored for MARKET orders.
+                    </div>
+
+                    <div class="action-row">
+                        <button id="submit-button" type="submit" class="submit-button">Place Order</button>
+                        <div id="form-status" class="form-status" aria-live="polite"></div>
+                    </div>
+                </form>
+            </section>
+
+            <section class="panel results-panel">
+                <div class="panel-heading">
+                    <h2>Results</h2>
+                </div>
+
+                <div id="status-banner" class="status-banner status-idle">
+                    Waiting for your next order submission.
+                </div>
+
+                <div class="result-grid">
+                    <section class="result-card">
+                        <h3>Order Request Summary</h3>
+                        <ul id="request-summary" class="summary-list empty-state">
+                            <li>Submit a form to see the normalized request.</li>
+                        </ul>
+                    </section>
+
+                    <section class="result-card">
+                        <h3>Order Response</h3>
+                        <ul id="order-response" class="summary-list empty-state">
+                            <li>No response yet.</li>
+                        </ul>
+                    </section>
+                </div>
+
+                <section class="result-card error-card">
+                    <h3>Error Details</h3>
+                    <p id="error-message" class="error-copy">No errors yet.</p>
+                </section>
+            </section>
+        </main>
+    </div>
+
+    <script src="{{ url_for('static', path='/app.js') }}" defer></script>
+</body>
+</html>

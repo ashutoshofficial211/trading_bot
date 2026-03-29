@@ -1,17 +1,21 @@
-Binance Futures Demo Trading Bot
-I built this project to place Binance USDT-M Futures demo orders without working directly in the Binance interface every time.
+# Binance Futures Demo Trading Bot
+
+I built this project to place Binance USDT-M Futures demo orders without depending on the Binance UI every time I want to test something.
 
 It supports:
 
-a browser UI
-a Typer CLI
-MARKET and LIMIT orders
-Binance Demo Trading API keys from environment variables
-validation before the order is sent
-file-based logging for local runs
-This project uses Binance Futures Demo Trading, not live trading.
+- a browser UI
+- a Typer CLI
+- MARKET and LIMIT orders
+- Binance Demo Trading API keys from environment variables
+- validation before the order is sent
+- local DEBUG logging
 
-What is inside
+This project is for Binance Demo Trading only, not live trading.
+
+## Project structure
+
+```text
 trading_bot/
   bot/
     __init__.py
@@ -31,110 +35,180 @@ trading_bot/
   web.py
   README.md
   requirements.txt
-Tech used
-Python 3.x
-python-binance
-Typer
-FastAPI
-Python logging
-python-dotenv
-Before you start
+```
+
+## Tech used
+
+- Python 3.x
+- `python-binance`
+- `Typer`
+- `FastAPI`
+- `python-dotenv`
+- Python `logging`
+
+## Binance demo API keys
+
 You need Binance Demo Trading API keys for USDT-M Futures.
 
-Do not use live Binance keys here.
+Get them from:
 
-How to get Binance Demo Trading API keys
-Go to Binance Demo Trading.
-Log in to your Binance account.
-Open Demo Trading.
-Go to API Management: https://demo.binance.com/en/my/settings/api-management
-Create a new API key.
-Copy the API key and secret key.
-If Binance shows multiple key types, use the regular API key + secret key pair that works with HMAC signing.
+1. [https://demo.binance.com/](https://demo.binance.com/)
+2. Log in to your Binance account
+3. Open Demo Trading
+4. Go to API Management:
+   [https://demo.binance.com/en/my/settings/api-management](https://demo.binance.com/en/my/settings/api-management)
+5. Create a new API key
+6. Copy the API key and secret key
 
-Local setup
-Clone the repo and install dependencies:
+If Binance shows multiple key types, use the regular HMAC API key and secret pair.
 
+## Local setup
+
+Install dependencies:
+
+```bash
 pip install -r requirements.txt
-Create a .env file in the project root:
+```
 
+Create a `.env` file in the project root:
+
+```dotenv
 BINANCE_API_KEY=your_demo_api_key
 BINANCE_API_SECRET=your_demo_api_secret
-Run the browser UI
+```
+
+Keep `.env` out of Git.
+
+## Run the UI
+
+```bash
 python web.py
+```
+
 Then open:
 
+```text
 http://127.0.0.1:8000
-This is the easiest way to use the app.
+```
 
-Run the CLI
-LIMIT order
+## Run the CLI
+
+LIMIT order:
+
+```bash
 python cli.py place-order --symbol BTCUSDT --side BUY --type LIMIT --quantity 0.002 --price 50000
-MARKET order
+```
+
+MARKET order:
+
+```bash
 python cli.py place-order --symbol BTCUSDT --side BUY --type MARKET --quantity 0.002
-Validation rules
-The app checks a few things before sending the order:
+```
 
-symbol must be valid
-side must be BUY or SELL
-type must be MARKET or LIMIT
-price is required for LIMIT
-price is not allowed for MARKET
-quantity must respect Binance symbol filters
-limit orders use GTC
-It also surfaces common Binance errors in a cleaner way, like:
+## Validation rules
 
-invalid credentials
-timestamp drift
-insufficient margin
-minimum notional issues
-Logging
-For local runs, the app writes DEBUG logs to:
+The app checks:
 
+- symbol validity
+- side must be `BUY` or `SELL`
+- type must be `MARKET` or `LIMIT`
+- `price` is required for `LIMIT`
+- `price` is not allowed for `MARKET`
+- Binance symbol filters for quantity and price
+- `GTC` for limit orders
+
+It also turns common Binance failures into cleaner messages, including:
+
+- invalid credentials
+- timestamp drift
+- insufficient margin
+- minimum notional issues
+- restricted-location rejections
+
+## Logging
+
+For local runs, logs go to:
+
+```text
 trading_bot.log
-That includes:
+```
 
-API requests
-API responses
-validation failures
-exceptions
-Notes on quantity
-For BTCUSDT, quantity is in BTC, not in dollars.
+The log includes:
 
-Example:
+- API requests
+- API responses
+- validation errors
+- exceptions
 
-0.002 means 0.002 BTC
-2 means 2 BTC
-So if you submit 2 by mistake, Binance may reject it with an insufficient margin error.
+## Quantity note
 
-Vercel deployment
-This project can also be deployed on Vercel.
+For `BTCUSDT`, quantity is in BTC, not in dollars.
 
-What to select in Vercel
+Examples:
+
+- `0.002` means `0.002 BTC`
+- `2` means `2 BTC`
+
+So if you submit `2`, Binance may reject it because the order is much larger than expected.
+
+## Vercel deployment
+
+This project can be deployed on Vercel.
+
 When Vercel asks for the application preset, choose:
 
-FastAPI
-That is the correct preset for this project.
+- `FastAPI`
 
-Region note for Binance
-Vercel Functions run in Washington, D.C. (`iad1`) by default. Binance can reject requests from that backend location even if you are personally in an allowed country, because Binance sees the server IP, not your browser location.
+### Vercel settings
 
-This repo now includes `vercel.json` with the function region pinned to `bom1` so the backend does not run from the default US region.
+- Application Preset: `FastAPI`
+- Root Directory: use the repo root if this repo is already the `trading_bot` project
+- Build Command: leave empty
+- Output Directory: leave empty
 
-If Binance still rejects the deployed backend after that, the likely issue is that Binance is blocking the hosting provider's cloud IP range. In that case, the practical fix is to keep the frontend on Vercel if you want, but run the trading backend on your own machine or a VPS in a Binance-supported region.
+### Vercel environment variables
 
-Static assets
-Frontend files are served from:
+Add these in Vercel Project Settings:
 
-public/assets
-Important assumption
-This project is meant for Binance USDT-M Futures Demo Trading only.
+- `BINANCE_API_KEY`
+- `BINANCE_API_SECRET`
 
-Useful files
-web.py -> runs the browser UI locally
-cli.py -> command-line entry point
-app.py -> Vercel FastAPI entrypoint
-bot/client.py -> Binance Futures API wrapper
-bot/orders.py -> order placement logic
-bot/validators.py -> request validation
-bot/logging_config.py -> logging setup
+### Region note for Binance
+
+Vercel Functions run in `iad1` (Washington, D.C.) by default. Binance can reject requests from that backend location even if you are personally in an allowed country, because Binance sees the server IP, not your browser location.
+
+This repo includes `vercel.json` with the function region pinned to `bom1` so the backend does not run from the default US region.
+
+If Binance still rejects the deployed backend after that, the likely issue is that Binance is blocking the hosting provider's cloud IP range. In that case, the practical setup is to keep the frontend on Vercel if you want, but run the trading backend on your own machine or a VPS in a Binance-supported region.
+
+### Vercel app entrypoint
+
+The deployment entrypoint is:
+
+- `app.py`
+
+### Static assets
+
+Frontend assets are served from:
+
+- `public/assets`
+
+## Useful files
+
+- `web.py` -> runs the browser UI locally
+- `cli.py` -> command-line entry point
+- `app.py` -> Vercel FastAPI entrypoint
+- `bot/client.py` -> Binance Futures API wrapper
+- `bot/orders.py` -> order logic
+- `bot/validators.py` -> input validation
+- `bot/logging_config.py` -> logging setup
+
+## Note
+
+If you ever exposed a demo API key while testing, revoke it in Binance Demo Trading and create a new one.
+
+## Reference
+
+Vercel FastAPI docs:
+
+[https://vercel.com/docs/frameworks/backend/fastapi](https://vercel.com/docs/frameworks/backend/fastapi)

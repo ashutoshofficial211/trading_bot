@@ -1,115 +1,88 @@
-# Binance Futures Demo Trading App
+# Binance Futures Demo Trading Bot
 
-Production-oriented Python application for placing USDT-M Futures orders on Binance Futures Demo Trading using `python-binance`.
+I built this project to place Binance USDT-M Futures demo orders without working directly in the Binance interface every time.
 
-## Overview
+It supports:
 
-This project provides a small but structured command-line tool that:
+- a browser UI
+- a Typer CLI
+- MARKET and LIMIT orders
+- Binance Demo Trading API keys from environment variables
+- validation before the order is sent
+- file-based logging for local runs
 
-- Places `MARKET` and `LIMIT` orders on Binance Futures Demo Trading
-- Offers a local browser UI for order entry and execution feedback
-- Loads credentials from environment variables
-- Validates user input before submitting orders
-- Validates order quantity and price against Binance exchange filters when possible
-- Writes detailed DEBUG logs to `trading_bot.log`
+This project uses Binance Futures Demo Trading, not live trading.
 
-The code is intentionally split so the UI and CLI stay thin and all Binance communication is isolated in a dedicated client wrapper.
-
-## Project Structure
+## What is inside
 
 ```text
 trading_bot/
   bot/
     __init__.py
     client.py
-    presenters.py
-    orders.py
-    validators.py
     logging_config.py
-  cli.py
-  web.py
-  app.py
+    orders.py
+    presenters.py
+    validators.py
   public/
     assets/
       app.js
       styles.css
   templates/
     index.html
+  app.py
+  cli.py
+  web.py
   README.md
   requirements.txt
 ```
 
-## Requirements
+## Tech used
 
-- Python 3.10+ recommended
-- Binance Futures Demo Trading API key and secret
+- Python 3.x
+- `python-binance`
+- `Typer`
+- `FastAPI`
+- Python `logging`
+- `python-dotenv`
 
-## Setup
+## Before you start
 
-1. Create and activate a virtual environment.
+You need Binance Demo Trading API keys for USDT-M Futures.
 
-```bash
-python -m venv .venv
-source .venv/bin/activate
-```
+Do not use live Binance keys here.
 
-On Windows PowerShell:
+## How to get Binance Demo Trading API keys
 
-```powershell
-python -m venv .venv
-.venv\Scripts\Activate.ps1
-```
+1. Go to [Binance Demo Trading](https://demo.binance.com/).
+2. Log in to your Binance account.
+3. Open Demo Trading.
+4. Go to API Management:
+   [https://demo.binance.com/en/my/settings/api-management](https://demo.binance.com/en/my/settings/api-management)
+5. Create a new API key.
+6. Copy the API key and secret key.
 
-2. Install dependencies.
+If Binance shows multiple key types, use the regular API key + secret key pair that works with HMAC signing.
+
+## Local setup
+
+Clone the repo and install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-3. Set your environment variables.
-
-Linux/macOS:
-
-```bash
-export BINANCE_API_KEY="your_testnet_key"
-export BINANCE_API_SECRET="your_testnet_secret"
-```
-
-Windows PowerShell:
-
-```powershell
-$env:BINANCE_API_KEY="your_testnet_key"
-$env:BINANCE_API_SECRET="your_testnet_secret"
-```
-
-Optional: because the project uses `python-dotenv`, you can also place these variables in a local `.env` file in the project root. A starter template is included as `.env.example`.
-
-Example `.env`:
+Create a `.env` file in the project root:
 
 ```dotenv
-BINANCE_API_KEY=your_testnet_key
-BINANCE_API_SECRET=your_testnet_secret
+BINANCE_API_KEY=your_demo_api_key
+BINANCE_API_SECRET=your_demo_api_secret
 ```
 
-## How To Get Binance Futures Demo Trading API Keys
 
-1. Open Binance Demo Trading: `https://demo.binance.com`
-2. Sign in with your Binance account or create one first.
-3. Open API Management: `https://demo.binance.com/en/my/settings/api-management`
-4. Create a new API key pair.
-5. Export the values into `BINANCE_API_KEY` and `BINANCE_API_SECRET`.
+## Run the browser UI
 
-Important:
-
-- These must be Binance Futures Demo Trading credentials, not Binance Spot production keys.
-- Binance's current USD-M Futures demo REST base URL is `https://demo-fapi.binance.com`.
-- Demo balances and orders are separate from production.
-
-## Run The Browser UI
-
-Start the local web app from the `trading_bot` directory:
-
-```bash
+```
 python web.py
 ```
 
@@ -119,149 +92,96 @@ Then open:
 http://127.0.0.1:8000
 ```
 
-The UI lets you:
+This is the easiest way to use the app.
 
-- Enter symbol, side, type, quantity, and price
-- Submit MARKET and LIMIT orders
-- See structured request and response summaries
-- Read clear error messages without using the terminal
+## Run the CLI
 
-## Deploy On Vercel
-
-This project can be deployed to Vercel as a FastAPI application.
-
-### Recommended Vercel settings
-
-- Application Preset: `FastAPI`
-- Root Directory: repository root (`trading_bot/`) if Vercel is importing this project directly
-- Build Command: leave empty
-- Output Directory: leave empty
-
-### Why `FastAPI` is the right preset
-
-Vercel's official FastAPI docs support zero-config deployment for an `app` object exposed from standard entrypoints such as `app.py`. This repository now includes a Vercel entrypoint at `app.py`, which re-exports the FastAPI app from `web.py`.
-
-Static assets are served from `public/assets`, which matches Vercel's recommended FastAPI static-asset layout.
-
-### Environment variables to add in Vercel
-
-Add these in the Vercel project settings under `Environment Variables`:
-
-- `BINANCE_API_KEY`
-- `BINANCE_API_SECRET`
-
-Do not upload your local `.env` file to GitHub or Vercel.
-
-### Vercel deployment steps
-
-1. Push the repository to GitHub.
-2. In Vercel, click `Add New Project`.
-3. Import the GitHub repository.
-4. Select the `FastAPI` application preset.
-5. Confirm the root directory is the project root if prompted.
-6. Add `BINANCE_API_KEY` and `BINANCE_API_SECRET` in Vercel environment variables.
-7. Deploy.
-
-### Notes for Vercel
-
-- Vercel runs the app as a serverless FastAPI function.
-- The included `app.py` file is there specifically so Vercel can detect the FastAPI entrypoint cleanly.
-- Local file logging still works, but on Vercel the log file is written to the temporary runtime directory instead of the repository folder. That file is ephemeral and should be treated as runtime-only.
-- If you want to test the Vercel-style app locally, Vercel's official docs recommend `vercel dev`.
-
-### Official Vercel references
-
-- FastAPI on Vercel: `https://vercel.com/docs/frameworks/backend/fastapi`
-- Vercel CLI local development: `https://vercel.com/docs/frameworks/backend/fastapi#local-development`
-
-## CLI Usage
-
-Run commands from the `trading_bot` directory.
-
-### Place a LIMIT order
+### LIMIT order
 
 ```bash
-python cli.py place-order --symbol BTCUSDT --side BUY --type LIMIT --quantity 0.001 --price 50000
+python cli.py place-order --symbol BTCUSDT --side BUY --type LIMIT --quantity 0.002 --price 50000
 ```
 
-### Place a MARKET order
+### MARKET order
 
 ```bash
-python cli.py place-order --symbol BTCUSDT --side SELL --type MARKET --quantity 0.001
+python cli.py place-order --symbol BTCUSDT --side BUY --type MARKET --quantity 0.002
 ```
 
-## Console Output
+## Validation rules
 
-The CLI prints:
+The app checks a few things before sending the order:
 
-- Order Request Summary
-- Order Response
-- Final Status
+- symbol must be valid
+- side must be `BUY` or `SELL`
+- type must be `MARKET` or `LIMIT`
+- `price` is required for `LIMIT`
+- `price` is not allowed for `MARKET`
+- quantity must respect Binance symbol filters
+- limit orders use `GTC`
 
-Example success output:
+It also surfaces common Binance errors in a cleaner way, like:
 
-```text
-Order Request Summary:
-- Symbol: BTCUSDT
-- Side: BUY
-- Type: LIMIT
-- Quantity: 0.001
-- Price: 50000
-
-Order Response:
-- orderId: 123456789
-- status: NEW
-- executedQty: 0
-
-Final Status:
-- SUCCESS
-```
+- invalid credentials
+- timestamp drift
+- insufficient margin
+- minimum notional issues
 
 ## Logging
 
-- Log file: `trading_bot.log`
-- Log level: `DEBUG`
-- On Vercel, the log file is created in the runtime temp directory because the deployed project directory is not intended for persistent writes
-- Logged events:
-  - Exchange metadata requests
-  - Order submission requests
-  - API responses
-  - Validation failures
-  - Exceptions and network/API errors
+For local runs, the app writes DEBUG logs to:
 
-## Validation Rules
+```text
+trading_bot.log
+```
 
-The CLI validates:
+That includes:
 
-- Symbol format
-- Side values (`BUY`, `SELL`)
-- Type values (`MARKET`, `LIMIT`)
-- Quantity must be a positive decimal
-- Price is required for `LIMIT`
-- Price must not be passed for `MARKET`
+- API requests
+- API responses
+- validation failures
+- exceptions
 
-Before placing an order, the service also checks Binance exchange metadata to validate:
+## Notes on quantity
 
-- Symbol availability on Binance Futures Demo Trading
-- Trading status
-- Quantity step size and min/max quantity
-- Price tick size and min/max price for limit orders
+For `BTCUSDT`, quantity is in BTC, not in dollars.
 
-## Error Handling
+Example:
 
-The application returns clean CLI errors for:
+- `0.002` means `0.002 BTC`
+- `2` means `2 BTC`
 
-- Missing environment variables
-- Invalid input
-- Binance API errors
-- Network/request failures
-- Unsupported or unavailable symbols
+So if you submit `2` by mistake, Binance may reject it with an insufficient margin error.
 
-## Assumptions
+## Vercel deployment
 
-- The tool targets Binance USDT-M Futures Demo Trading only.
-- `LIMIT` orders are submitted with `timeInForce=GTC`.
-- The response uses `newOrderRespType=RESULT` so market orders can return execution details when Binance provides them.
-- The browser UI runs locally on `127.0.0.1:8000`.
-- The user runs commands from the project root: `trading_bot/`.
-- Vercel deployment uses the `FastAPI` preset and the root `app.py` entrypoint.
+This project can also be deployed on Vercel.
+
+### What to select in Vercel
+
+When Vercel asks for the application preset, choose:
+
+- `FastAPI`
+
+That is the correct preset for this project.
+
+
+### Static assets
+
+Frontend files are served from:
+
+- `public/assets`
+
+## Important assumption
+
+This project is meant for Binance USDT-M Futures Demo Trading only.
+
+## Useful files
+
+- `web.py` -> runs the browser UI locally
+- `cli.py` -> command-line entry point
+- `app.py` -> Vercel FastAPI entrypoint
+- `bot/client.py` -> Binance Futures API wrapper
+- `bot/orders.py` -> order placement logic
+- `bot/validators.py` -> request validation
+- `bot/logging_config.py` -> logging setup

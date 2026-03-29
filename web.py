@@ -16,14 +16,15 @@ from pydantic import BaseModel, ConfigDict, Field
 import uvicorn
 
 from bot.client import BinanceFuturesTestnetClient, MissingCredentialsError
-from bot.logging_config import get_log_file_path, setup_logging
+from bot.logging_config import get_log_file_path, is_vercel_runtime, setup_logging
 from bot.orders import OrderPlacementError, OrderResult, OrderService
 from bot.presenters import SummaryField, build_request_summary, build_response_summary
 from bot.validators import ValidationError, build_order_request
 
 BASE_DIR = Path(__file__).resolve().parent
 TEMPLATES_DIR = BASE_DIR / "templates"
-STATIC_DIR = BASE_DIR / "static"
+PUBLIC_DIR = BASE_DIR / "public"
+ASSETS_DIR = PUBLIC_DIR / "assets"
 
 logger = logging.getLogger(__name__)
 templates = Jinja2Templates(directory=str(TEMPLATES_DIR))
@@ -74,7 +75,8 @@ app = FastAPI(
     version="0.2.0",
     lifespan=lifespan,
 )
-app.mount("/static", StaticFiles(directory=str(STATIC_DIR)), name="static")
+if not is_vercel_runtime():
+    app.mount("/assets", StaticFiles(directory=str(ASSETS_DIR)), name="assets")
 
 
 @app.get("/", response_class=HTMLResponse)

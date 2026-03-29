@@ -28,9 +28,11 @@ trading_bot/
     logging_config.py
   cli.py
   web.py
-  static/
-    app.js
-    styles.css
+  app.py
+  public/
+    assets/
+      app.js
+      styles.css
   templates/
     index.html
   README.md
@@ -124,6 +126,54 @@ The UI lets you:
 - See structured request and response summaries
 - Read clear error messages without using the terminal
 
+## Deploy On Vercel
+
+This project can be deployed to Vercel as a FastAPI application.
+
+### Recommended Vercel settings
+
+- Application Preset: `FastAPI`
+- Root Directory: repository root (`trading_bot/`) if Vercel is importing this project directly
+- Build Command: leave empty
+- Output Directory: leave empty
+
+### Why `FastAPI` is the right preset
+
+Vercel's official FastAPI docs support zero-config deployment for an `app` object exposed from standard entrypoints such as `app.py`. This repository now includes a Vercel entrypoint at `app.py`, which re-exports the FastAPI app from `web.py`.
+
+Static assets are served from `public/assets`, which matches Vercel's recommended FastAPI static-asset layout.
+
+### Environment variables to add in Vercel
+
+Add these in the Vercel project settings under `Environment Variables`:
+
+- `BINANCE_API_KEY`
+- `BINANCE_API_SECRET`
+
+Do not upload your local `.env` file to GitHub or Vercel.
+
+### Vercel deployment steps
+
+1. Push the repository to GitHub.
+2. In Vercel, click `Add New Project`.
+3. Import the GitHub repository.
+4. Select the `FastAPI` application preset.
+5. Confirm the root directory is the project root if prompted.
+6. Add `BINANCE_API_KEY` and `BINANCE_API_SECRET` in Vercel environment variables.
+7. Deploy.
+
+### Notes for Vercel
+
+- Vercel runs the app as a serverless FastAPI function.
+- The included `app.py` file is there specifically so Vercel can detect the FastAPI entrypoint cleanly.
+- Local file logging still works, but on Vercel the log file is written to the temporary runtime directory instead of the repository folder. That file is ephemeral and should be treated as runtime-only.
+- If you want to test the Vercel-style app locally, Vercel's official docs recommend `vercel dev`.
+
+### Official Vercel references
+
+- FastAPI on Vercel: `https://vercel.com/docs/frameworks/backend/fastapi`
+- Vercel CLI local development: `https://vercel.com/docs/frameworks/backend/fastapi#local-development`
+
 ## CLI Usage
 
 Run commands from the `trading_bot` directory.
@@ -171,6 +221,7 @@ Final Status:
 
 - Log file: `trading_bot.log`
 - Log level: `DEBUG`
+- On Vercel, the log file is created in the runtime temp directory because the deployed project directory is not intended for persistent writes
 - Logged events:
   - Exchange metadata requests
   - Order submission requests
@@ -213,3 +264,4 @@ The application returns clean CLI errors for:
 - The response uses `newOrderRespType=RESULT` so market orders can return execution details when Binance provides them.
 - The browser UI runs locally on `127.0.0.1:8000`.
 - The user runs commands from the project root: `trading_bot/`.
+- Vercel deployment uses the `FastAPI` preset and the root `app.py` entrypoint.
